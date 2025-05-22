@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Cartas: Batalha de Terrenos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Jogo de Cartas: Batalha de Terrenos</h1>
+
+  <div id="status"></div>
+  <h3 id="turno">Turno de: Jogador 1</h3>
+
+  <div>
+    <button onclick="comecarJogo()">Começar Jogo</button>
+    <button onclick="reiniciarJogo()">Reiniciar</button>
+    <button onclick="pularTurno()">Pular Turno</button>
+  </div>
+
+  <div id="ataques-totais" class="placar">
+    Ataque Total - Jogador 1: <span id="ataque-j1">0</span> | Jogador 2: <span id="ataque-j2">0</span>
+  </div>
+  <div id="placar-acumulado" class="placar">
+    Placar - Jogador 1: <span id="placar-j1">0</span> | Jogador 2: <span id="placar-j2">0</span>
+  </div>
+
+  <div class="section">
+    <h3>Mão do Jogador 1</h3>
+    <div class="mao" id="mao-jogador-1"></div>
+  </div>
+
+  <div class="linha">
+    <div class="campo-container">
+      <h4>Campo do Jogador 1</h4>
+      <div class="campo" id="campo-j1-terrestre">Terrestre: </div>
+      <div class="campo" id="campo-j1-voador">Voador: </div>
+      <div class="campo" id="campo-j1-aquatico">Aquático: </div>
+    </div>
+
+    <div class="campo-container">
+      <h4>Campo do Jogador 2</h4>
+      <div class="campo" id="campo-j2-terrestre">Terrestre: </div>
+      <div class="campo" id="campo-j2-voador">Voador: </div>
+      <div class="campo" id="campo-j2-aquatico">Aquático: </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Mão do Jogador 2</h3>
+    <div class="mao" id="mao-jogador-2"></div>
+  </div>
+
+  <script>
+    const todasCartas = [
+      { nome: 'Leão (Terrestre)', tipo: 'terrestre', ataque: 7 },
+      { nome: 'Elefante (Terrestre)', tipo: 'terrestre', ataque: 6 },
+      { nome: 'Cavalo (Terrestre)', tipo: 'terrestre', ataque: 5 },
+      { nome: 'Tigre (Terrestre)', tipo: 'terrestre', ataque: 4 },
+      { nome: 'Rinoceronte (Terrestre)', tipo: 'terrestre', ataque: 8 },
+      { nome: 'Águia (Voador)', tipo: 'voador', ataque: 6 },
+      { nome: 'Falcão (Voador)', tipo: 'voador', ataque: 7 },
+      { nome: 'Morcego (Voador)', tipo: 'voador', ataque: 3 },
+      { nome: 'Papagaio (Voador)', tipo: 'voador', ataque: 2 },
+      { nome: 'Dragão (Voador)', tipo: 'voador', ataque: 9 },
+      { nome: 'Tubarão (Aquático)', tipo: 'aquatico', ataque: 8 },
+      { nome: 'Polvo (Aquático)', tipo: 'aquatico', ataque: 4 },
+      { nome: 'Golfinho (Aquático)', tipo: 'aquatico', ataque: 5 },
+      { nome: 'Baleia (Aquático)', tipo: 'aquatico', ataque: 9 },
+      { nome: 'Peixe-Espada (Aquático)', tipo: 'aquatico', ataque: 6 }
+    ];
+
+    function embaralhar(cartas) {
+      return cartas.sort(() => Math.random() - 0.5);
+    }
+
+    function comprarCartas(qtd) {
+      return embaralhar([...todasCartas]).slice(0, qtd);
+    }
+
+    const jogador1 = {
+      mao: [],
+      campo: { terrestre: [], voador: [], aquatico: [] },
+      vida: 3,
+      passou: false
+    };
+    const jogador2 = {
+      mao: [],
+      campo: { terrestre: [], voador: [], aquatico: [] },
+      vida: 3,
+      passou: false
+    };
+
+    let placar = { j1: 0, j2: 0 };
+    let turno = 1;
+
+    function atualizarInterface() {
+      document.getElementById('turno').innerText = `Turno de: Jogador ${turno}`;
+      document.getElementById('status').innerText = `Vida - Jogador 1: ${jogador1.vida}, Jogador 2: ${jogador2.vida}`;
+      document.getElementById('placar-j1').innerText = placar.j1;
+      document.getElementById('placar-j2').innerText = placar.j2;
+      renderMao('mao-jogador-1', jogador1, 1);
+      renderMao('mao-jogador-2', jogador2, 2);
+      ['terrestre', 'voador', 'aquatico'].forEach(tipo => {
+        document.getElementById(`campo-j1-${tipo}`).innerText = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${jogador1.campo[tipo].map(c => c.nome).join(', ')}`;
+        document.getElementById(`campo-j2-${tipo}`).innerText = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${jogador2.campo[tipo].map(c => c.nome).join(', ')}`;
+      });
+      atualizarAtaques();
+    }
+
+    function renderMao(containerId, jogador, numero) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      jogador.mao.forEach((carta, index) => {
+        const btn = document.createElement('button');
+        btn.innerText = `${carta.nome} (${carta.ataque})`;
+        btn.disabled = turno !== numero;
+        btn.onclick = () => jogarCarta(jogador, carta, index);
+        container.appendChild(btn);
+      });
+    }
+
+    function jogarCarta(jogador, carta, index) {
+      jogador.campo[carta.tipo].push(carta);
+      jogador.mao.splice(index, 1);
+      turno = turno === 1 ? 2 : 1;
+      atualizarInterface();
+    }
+
+    function pularTurno() {
+      if (turno === 1) {
+        jogador1.passou = true;
+        turno = 2;
+      } else {
+        jogador2.passou = true;
+        turno = 1;
+      }
+
+      if (jogador1.passou && jogador2.passou) {
+        verificarRodada();
+      } else {
+        atualizarInterface();
+      }
+    }
+
+    function verificarRodada() {
+      let ataque1 = 0, ataque2 = 0;
+      ['terrestre', 'voador', 'aquatico'].forEach(tipo => {
+        jogador1.campo[tipo].forEach(c => ataque1 += c.ataque);
+        jogador2.campo[tipo].forEach(c => ataque2 += c.ataque);
+      });
+      let resultado;
+      if (ataque1 > ataque2) {
+        jogador2.vida--;
+        placar.j1++;
+        resultado = `Jogador 1 venceu a rodada!`;
+      } else if (ataque2 > ataque1) {
+        jogador1.vida--;
+        placar.j2++;
+        resultado = `Jogador 2 venceu a rodada!`;
+      } else {
+        resultado = 'Empate na rodada!';
+      }
+      alert(`Jogador 1: ${ataque1} de ataque | Jogador 2: ${ataque2} de ataque\n${resultado}`);
+      jogador1.passou = false;
+      jogador2.passou = false;
+      limparCampos();
+      turno = 1;
+      atualizarInterface();
+      if (jogador1.vida === 0 || jogador2.vida === 0) {
+        alert(`Jogo encerrado! ${jogador1.vida === 0 ? 'Jogador 2' : 'Jogador 1'} venceu!`);
+      }
+    }
+
+    function limparCampos() {
+      jogador1.campo = { terrestre: [], voador: [], aquatico: [] };
+      jogador2.campo = { terrestre: [], voador: [], aquatico: [] };
+    }
+
+    function atualizarAtaques() {
+      let ataque1 = 0, ataque2 = 0;
+      ['terrestre', 'voador', 'aquatico'].forEach(tipo => {
+        jogador1.campo[tipo].forEach(c => ataque1 += c.ataque);
+        jogador2.campo[tipo].forEach(c => ataque2 += c.ataque);
+      });
+      document.getElementById('ataque-j1').innerText = ataque1;
+      document.getElementById('ataque-j2').innerText = ataque2;
+    }
+
+    function comecarJogo() {
+      jogador1.mao = comprarCartas(5);
+      jogador2.mao = comprarCartas(5);
+      jogador1.vida = 3;
+      jogador2.vida = 3;
+      limparCampos();
+      jogador1.passou = false;
+      jogador2.passou = false;
+      turno = 1;
+      atualizarInterface();
+    }
+
+    function reiniciarJogo() {
+      location.reload();
+    }
+
+    atualizarInterface();
+  </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+/* estilos.css */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #d4f4dc, #b7e4c7);
+  color: #2f4f4f;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: #2e8b57;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 2px #fff;
+}
+
+h3, h4 {
+  color: #3a5f47;
+  margin: 10px 0;
+}
+
+button {
+  background-color: #81c784;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: #66bb6a;
+}
+
+button:disabled {
+  background-color: #c8e6c9;
+  cursor: not-allowed;
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.linha {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.campo-container {
+  background-color: #e0f2f1;
+  border: 2px solid #66bb6a;
+  border-radius: 10px;
+  padding: 15px;
+  width: 45%;
+  min-width: 300px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  margin-bottom: 20px;
+}
+
+.campo {
+  background-color: #ffffff;
+  border-radius: 5px;
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px dashed #81c784;
+  text-align: left;
+  font-size: 0.95em;
+}
+
+.placar {
+  font-size: 1.2em;
+  background-color: #a5d6a7;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px auto;
+  width: fit-content;
+  box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
+}
+
+#status {
+  font-weight: bold;
+  color: #33691e;
+  margin-bottom: 10px;
+}
+
+.mao button {
+  display: inline-block;
+  margin: 4px;
+  background-color: #aed581;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+  .linha {
+    flex-direction: column;
+    align-items: center;
+  }
+  .campo-container {
+    width: 90%;
+  }
+}
